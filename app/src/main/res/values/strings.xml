@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">PetroPal</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="based_on_gps">Based on GPS</string>
+    <string name="based_on_the_below_zipcode">Based on the Below Zipcode</string>
+    <string name="get_nearby_petrol_pumps">Get Nearby Petrol Pumps</string>
+    <string name="find_my_location">Find My Location</string>
+</resources>
