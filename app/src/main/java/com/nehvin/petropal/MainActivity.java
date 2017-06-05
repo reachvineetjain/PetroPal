@@ -79,10 +79,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         {
             Log.i("VKJ",zipText.getText().toString());
             mapIntent.putExtra("zipcode",zipText.getText().toString());
+            mapIntent.putExtra("current",false);
         }
         else
         {
             mapIntent.putExtra("zipcode","");
+            mapIntent.putExtra("current",true);
         }
         startActivity(mapIntent);
     }

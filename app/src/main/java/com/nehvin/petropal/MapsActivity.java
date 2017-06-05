@@ -46,6 +46,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationManager locMgr;
     private LocationListener locListner;
     private String zipcode;
+    private boolean isGPSBased;
+    private URL url;
+    private GasStationData gdt;
     private static final String TAG = MapsActivity.class.getSimpleName();
 
     @Override
@@ -73,16 +76,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locMgr = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         Intent intent = getIntent();
         zipcode = intent.getStringExtra("zipcode");
-
-//        Location localLocation = null;
+        isGPSBased = intent.getBooleanExtra("current",false);
 
         locListner = new LocationListener() {
             @Override
             public void onLocationChanged(Location location)
             {
-//                if (location != null) {
+                if (location != null && isGPSBased) {
 //                    updateCurrentLoc(location);
-//                }
+                    updateLOCBasedonUserInput();
+                }
             }
 
             @Override
@@ -101,12 +104,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (Build.VERSION.SDK_INT < 23)
         {
             locMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListner);
+            mMap.setMyLocationEnabled(true);
         }
         else
         {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             {
-
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                         Manifest.permission.ACCESS_FINE_LOCATION)) {
                     Toast.makeText(this, "You need to provide location permission to get your current " +
@@ -146,7 +149,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void updateLOCBasedonUserInput() {
-        Location localLocation = null;
+        Location localLocation = null ;
         if(zipcode != null && !TextUtils.isEmpty(zipcode))
         {
             Geocoder geoCoder = new Geocoder(getApplicationContext(), Locale.getDefault());
@@ -168,8 +171,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             localLocation = fetchBestLocation(this);
         }
         if(localLocation != null){
-            URL url = buildUrl(localLocation);
-            GasStationData gdt = new GasStationData();
+            url = buildUrl(localLocation);
+            gdt = new GasStationData();
             ArrayList<PetrolPumpData> petrolPumpDataArrayList=null;
             try {
                 String listofGasStations = gdt.execute(url).get();
@@ -200,6 +203,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void startListening() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListner);
+            mMap.setMyLocationEnabled(true);
         }
         Location lastUnkownLocation = fetchBestLocation(this);
         if (lastUnkownLocation != null) {
@@ -217,18 +221,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void updateCurrentLoc(Location lastUnkownLocation, ArrayList<PetrolPumpData> listOfPumps) {
 
-        if (listOfPumps != null && listOfPumps.size()>0) {
-            mMap.clear();
-            addPetrolPumpsOnMap(listOfPumps);
-        }
-
+        mMap.clear();
         LatLng currentLocation = new LatLng(lastUnkownLocation.getLatitude(), lastUnkownLocation.getLongitude());
         mMap.addMarker(new MarkerOptions().position(currentLocation).title("Your Current Location"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
 
+        if (listOfPumps != null && listOfPumps.size()>0) {
+            addPetrolPumpsOnMap(listOfPumps);
+        }
     }
-
-
 
     public void addPetrolPumpsOnMap(ArrayList<PetrolPumpData> listOfPumps)
     {
