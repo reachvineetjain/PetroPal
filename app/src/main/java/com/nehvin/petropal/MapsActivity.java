@@ -197,6 +197,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         {
             //TODO - gracefull exit of application and not show some weird locations
             Log.i(TAG, "Location permission was NOT granted.Showing for current location");
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         }
     }
 
